@@ -1,21 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+//style
+import styles from './assets/src/styles/GlobalStyles'
+
+import firebase from './assets/src/utils/firebase';
+import 'firebase/auth';
+
+import Auth from './assets/src/components/Auth';
+
+
 export default function App() {
+
+  const [user, setUser] = useState(undefined);
+
+  useEffect(() =>{
+    firebase.auth().onAuthStateChanged((Response) => {
+    });
+
+  },[]);
+
+  if (user === undefined) return null;
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={[styles.container, styles.styeContainer]}>
+      { user? <Text>hola</Text>: <Auth/> }
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
