@@ -1,15 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, Image, Button } from 'react-native';
 
 //style
 import styles from '../styles/GlobalStyles'
+//Components
+import LoginForm from '../components/LoginForm'
+import RegistroForm from '../components/RegistroFrom'
 
 
 
 export default function Auth() {
-  return (
-    <View style={[styles.container, styles.styeContainer]}>
-      <Text>hola Auth</Text>
-    </View>
-  );
+
+    const [isUser, steIsUser] = useState(true);
+
+    const cambioFormulario = () => {
+        steIsUser(!isUser);
+    }
+
+    return (
+        <View style={[styles.styeContainer, styles.containerSecundary]}>
+            <Image source={require('../../img/logo.png')} style={styles.image} />
+            { isUser ?
+                (
+                    <LoginForm cambioFormulario={cambioFormulario} />
+                ) : (
+                    <RegistroForm cambioFormulario={cambioFormulario} />
+                )
+            }
+        </View>
+    );
 }
