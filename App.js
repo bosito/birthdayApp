@@ -16,11 +16,12 @@ export default function App() {
 
   useEffect(() =>{
     firebase.auth().onAuthStateChanged((Response) => {
+      setUser(Response);
     });
 
   },[]);
 
-  //if (user === undefined) return null;
+  if (user === undefined) return null;
 
   return (
     <View style={[styles.container, styles.styeContainer]}>

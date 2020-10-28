@@ -33,4 +33,8 @@ export default StyleSheet.create({
         borderWidth: 1,
         borderColor: '#162D6B'
     },
+    errorImput: {
+        borderColor: 'red',
+        borderWidth: 2,
+    },
 });
