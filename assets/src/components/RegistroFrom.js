@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, TouchableOpacity, TextInput, ToastAndroid, KeyboardAvoidingView, SafeAreaView } from 'react-native';
 import { validateEmail } from '../utils/validacion'
+import firebase from '../utils/firebase';
+import 'firebase/auth';
 
 //style
 import styles from '../styles/GlobalStyles';
@@ -9,78 +11,121 @@ const colorFrom = '#969696';
 
 export default function LoginForm(props) {
 
-    const [datosformulario, setDatosFormulario] = useState(defaultFormulario())
+    const [formData, setFormData] = useState(defaultValue());
     const [formError, setFormError] = useState({});
 
     const { cambioFormulario } = props;
 
-    const Registrate = () => {
+    const Toast = (mensaje) =>  ToastAndroid.show(mensaje, ToastAndroid.LONG);
+
+    const logeado = () => {
+        firebase
+            .auth()
+            .createUserWithEmailAndPassword(formData.email, formData.password)
+            .catch(() => {
+                console.log('error');
+                setFormError({
+                    email: true,
+                    password: true,
+                    repeatPassword: true,
+                });
+            });
+    }
+
+    const register = () => {
         let errors = {};
 
-        if(!datosformulario.contraseña || !datosformulario.correo || !datosformulario.repetirContraseña){
-            if(!datosformulario.contraseña) errors.contraseña = true;
-            if(!datosformulario.correo) errors.correo = true;
-            if(!datosformulario.repetirContraseña) errors.repetirContraseña = true;
-        } else if (!validateEmail(datosformulario.correo)){
-            errors.correo = true;
-        } else if(datosformulario.correo !== datosformulario.repetirContraseña){
-            errors.correo = true;
-            errors.repetirContraseña = true;
-        } else if(datosformulario.contraseña.length < 6) {
-            errors.correo = true;
-            errors.repetirContraseña = true;
-        }
+        if (!formData.email || !formData.password || !formData.repeatPassword) {
+            if (!formData.email) {
+                Toast('coloca un correo');
+                errors.email = true;
+            }
+            if (!formData.password) {
+                Toast('Ingresa una contraseña');
+                errors.password = true;
+            }
+            if (!formData.repeatPassword) {
+                Toast('rrepite la contraseña');
+                errors.repeatPassword = true;
+            }
+            if (!formData.email & !formData.password & !formData.repeatPassword) {
+                errors.email = true;
+                errors.password = true;
+                errors.repeatPassword = true;
+                Toast('coloca tus datos');
 
-        setFormError(errors)
-        console.log(errors)
+            }
+            //else if (!validateEmail(formData.email)) {
+            //errors.email = true;
+        } else if (formData.password !== formData.repeatPassword) {
+            Toast('las contraseñas deben ser iguales')
+            errors.password = true;
+            errors.repeatPassword = true;
+        } else if (formData.password.length < 6) {
+            Toast('la contraseña deve ser mayor a 6 caracteres')
+            errors.password = true;
+            errors.repeatPassword = true;
+        } else {
+            Toast('cargando...');
+            logeado();
+        }
+        setFormError(errors);
+        //console.log(errors);
     }
 
     return (
+        <>
+            <KeyboardAvoidingView style={{ flex: 1 }}>
+                <View style={[styles.containerSecundary, styles.styeContainer]}>
 
-        <View style={[styles.containerSecundary, styles.styeContainer]}>
-            <TextInput
-                style={[styles.imput, formError.correo && styles.errorImput ]}
-                placeholder='Correo Electronico'
-                placeholderTextColor={colorFrom}
-                onChange={(e)=>{setDatosFormulario({...datosformulario, correo: e.nativeEvent.text})}}
-            />
-            <TextInput
-                style={[styles.imput, formError.contraseña && styles.errorImput ]}
-                placeholder='Contraseña'
-                secureTextEntry
-                placeholderTextColor={colorFrom}
-                onChange={(e)=>{setDatosFormulario({...datosformulario, contraseña: e.nativeEvent.text})}}
-            />
-            <TextInput
-                style={[styles.imput, formError.repetirContraseña && styles.errorImput]}
-                placeholder='Repetir Contraseña'
-                placeholderTextColor={colorFrom}
-                secureTextEntry
-                onChange={(e)=>{setDatosFormulario({...datosformulario, repetirContraseña: e.nativeEvent.text})}}
-            />
+                    <TextInput
+                        style={[styles.imput, formError.email && styles.errorImput]}
+                        placeholder='Correo Electronico'
+                        placeholderTextColor={colorFrom}
+                        onChangeText={(e) => { setFormData({ ...formData, email: e }) }
+                        }
+                    />
 
-            <TouchableOpacity onPress={Registrate}>
-                <Text style={styles.text}>Registrate</Text>
-            </TouchableOpacity>
+                    <TextInput
+                        style={[styles.imput, formError.password && styles.errorImput]}
+                        placeholder='Contraseña'
+                        secureTextEntry
+                        placeholderTextColor={colorFrom}
+                        onChange={(e) => { setFormData({ ...formData, password: e.nativeEvent.text }) }
+                        }
+                    />
 
-            <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 15 }}>
+                    <TextInput
+                        style={[styles.imput, formError.repeatPassword && styles.errorImput]}
+                        placeholder='Repetir Contraseña'
+                        placeholderTextColor={colorFrom}
+                        secureTextEntry
+                        onChange={(e) => { setFormData({ ...formData, repeatPassword: e.nativeEvent.text }) }
+                        }
+                    />
 
-                <TouchableOpacity onPress={cambioFormulario}>
-                    <Text style={styles.text}>Inicial secion</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity onPress={register}>
+                        <Text style={styles.text}>Registrate</Text>
+                    </TouchableOpacity>
 
-        </View>
+                    <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 15 }}>
+
+                        <TouchableOpacity onPress={cambioFormulario}>
+                            <Text style={styles.text}>Inicial secion</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+            </KeyboardAvoidingView>
+        </>
 
     );
 }
 
-const defaultFormulario = ()=>{
-    return(
-        {
-            correo: '',
-            contraseña: '',
-            repetirContraseña: '',
-        }
-    )
+const defaultValue = () => {
+    return {
+        email: '',
+        password: '',
+        repeatPassword: '',
+    }
 }
